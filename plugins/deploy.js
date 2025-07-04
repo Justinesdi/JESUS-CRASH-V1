@@ -7,7 +7,7 @@ global.jadibotSessions = global.jadibotSessions || {};
 cmd({
   pattern: 'deploy',
   desc: '🚀 Deploy WhatsApp session via MEGA backup.',
-  category: 'tools',
+  category: 'spam',
   react: '🪛',
   filename: __filename
 }, async (conn, m, { text }) => {
