@@ -6,7 +6,7 @@ cmd({
     pattern: "remove",
     alias: ["kick", "k", "out"],
     desc: "Removes a member from the group",
-    category: "admin",
+    category: "group",
     react: "❌",
     filename: __filename
 },
