@@ -1,5 +1,5 @@
 const { cmd } = require('../command');
-const { writeFileSync, unlinkSync } = require('fs');
+const { writeFileSync, unlinkSync, existsSync, mkdirSync } = require('fs');
 const { fromBuffer } = require('file-type');
 const path = require('path');
 
@@ -9,18 +9,21 @@ cmd({
   category: "convert",
   desc: "Convert sticker to normal image",
   filename: __filename,
-}, async (conn, m, { repondre }) => {
-  const quoted = m.quoted || m;
-  const mime = (quoted.msg || quoted).mimetype || "";
+}, async (conn, m, { reply }) => {
+  const quoted = m.quoted;
 
-  if (!/webp/.test(mime)) {
-    return await repondre("❌ Please reply to a sticker to convert it into an image.");
+  if (!quoted || !quoted.message || !quoted.message.stickerMessage) {
+    return await reply("❌ Please reply to a sticker to convert it into an image.");
   }
 
   try {
-    const buffer = await quoted.download();
-    const { ext } = await fromBuffer(buffer) || { ext: 'webp' };
-    const filename = path.join(__dirname, `../sessions/temp/toimage-${Date.now()}.${ext}`);
+    // Kreye folder tanporè si li pa egziste
+    const tempDir = path.resolve(__dirname, "../sessions/temp");
+    if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
+
+    const buffer = await conn.downloadMediaMessage(quoted);
+    const { ext } = (await fromBuffer(buffer)) || { ext: 'webp' };
+    const filename = path.join(tempDir, `toimage-${Date.now()}.${ext}`);
 
     writeFileSync(filename, buffer);
 
@@ -29,15 +32,15 @@ cmd({
       caption: "✅ Successfully converted sticker to image!",
     }, { quoted: m });
 
-    // Netwaye fichye tanporè a apre 5 segonn
+    // Efase fichye apre 5 segonn
     setTimeout(() => {
       try {
         unlinkSync(filename);
-      } catch (e) {}
+      } catch {}
     }, 5000);
 
   } catch (err) {
     console.error(err);
-    await repondre("❌ Error occurred during conversion.");
+    await reply("❌ Error occurred during conversion.");
   }
 });
