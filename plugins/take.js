@@ -2,56 +2,49 @@ const { cmd } = require('../command');
 const { Sticker, StickerTypes } = require('wa-sticker-formatter');
 
 cmd({
-  pattern: 'take ?(.*)',
-  desc: 'Pran sticker/img/video epi mete pack & author ou vle',
-  category: 'convert',
-  react: '📦',
+  pattern: 'take',  // pran tout sa ki apre "take" kòm paramèt
+  desc: 'Re-send any sticker, image, or short video as yours (max 20s video)',
+  category: 'spam',
+  react: '🎭',
   filename: __filename
-}, async (bot, mek, m, { args, reply }) => {
+}, async (bot, mek, m, { reply, match }) => {  // ajoute "match" pou jwenn paramèt
   try {
-    if (args.length < 2) return reply('❌ Egzanp: .take dawens Je suis le roi');
-
-    const pack = args[0]; // Premye mo = pack
-    const author = args.slice(1).join(' '); // Rès = author
-
     const quoted = mek.quoted;
-    if (!quoted) return reply('❌ Reponn ak yon *sticker*, *imaj*, oswa *videyo ≤ 20s*.');
 
-    let qmsg = quoted.message;
-    let actualMsg = quoted;
-
-    // Sipò view-once
-    if (qmsg?.viewOnceMessage) {
-      const inner = qmsg.viewOnceMessage.message;
-      const mediaType = Object.keys(inner)[0];
-      quoted.mtype = mediaType;
-      actualMsg = { ...quoted, message: inner };
+    if (!quoted || !['stickerMessage', 'videoMessage', 'imageMessage'].includes(quoted.mtype)) {
+      return reply('❌ Reply to a *sticker*, *image*, or *short video* (max 20s).');
     }
 
-    if (!['stickerMessage', 'videoMessage', 'imageMessage'].includes(quoted.mtype)) {
-      return reply('❌ Sipòte sèlman *sticker*, *imaj*, oswa *videyo ≤ 20s*.');
+    // Verify video duration
+    if (quoted.mtype === 'videoMessage' && quoted.message.videoMessage.seconds > 20) {
+      return reply('❌ Video is longer than 20 seconds. Please use a shorter one.');
     }
 
-    if (quoted.mtype === 'videoMessage' && actualMsg.message.videoMessage.seconds > 20) {
-      return reply('❌ Videyo a depase 20 segonn.');
-    }
+    const media = await bot.downloadMediaMessage(quoted);
+    if (!media) return reply('❌ Failed to download media.');
 
-    const media = await bot.downloadMediaMessage(actualMsg);
-    if (!media) return reply('❌ Pa ka telechaje medya.');
+    const userName = mek.pushName || 'Unknown';
+    const packname = userName;
+
+    // Text author se sa itilizatè mete apre .take, sinon default
+    const authorText = match && match.trim().length > 0
+      ? match.trim()
+      : `Ma volonté est un feu indomptable,\nmon nom, une légende qui s’écrit à chaque pas.`;
 
     const sticker = new Sticker(media, {
-      pack,
-      author,
+      pack: packname,
+      author: authorText,
       type: StickerTypes.FULL,
       quality: 100,
       fps: 10,
+      loop: 0,
     });
 
-    const buffer = await sticker.toBuffer();
-    await bot.sendMessage(mek.chat, { sticker: buffer }, { quoted: mek });
+    const stickerBuffer = await sticker.toBuffer();
+    await bot.sendMessage(mek.chat, { sticker: stickerBuffer }, { quoted: mek });
 
   } catch (err) {
     console.error('[TAKE ERROR]', err);
-    reply('❌ Erè pandan tretman. Medya a ka pa disponib.');
+    reply('❌ Erè pandan konvèsyon. Tanpri eseye ankò.');
   }
 });
