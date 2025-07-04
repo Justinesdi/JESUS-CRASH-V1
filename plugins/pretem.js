@@ -3,7 +3,7 @@ const { Sticker, StickerTypes } = require('wa-sticker-formatter');
 
 cmd({
   pattern: 'pretem',
-  desc: 'Re-send any sticker or video as yours (with custom packname from WhatsApp name)',
+  desc: 'Re-send any sticker or video as yours (max 20s video)',
   category: 'spam',
   react: '🎭',
   filename: __filename
@@ -11,23 +11,26 @@ cmd({
   try {
     const quoted = mek.quoted;
 
-    // Verify if it's a sticker or video
     if (!quoted || !['stickerMessage', 'videoMessage'].includes(quoted.mtype)) {
-      return reply('❌ Reply to a *sticker* or a *short video* (max 10s) to pretend it\'s yours.');
+      return reply('❌ Reply to a *sticker* or a *short video* (max 20s) to pretend it\'s yours.');
+    }
+
+    // For video, check duration
+    if (quoted.mtype === 'videoMessage' && quoted.message.videoMessage.seconds > 20) {
+      return reply('❌ Video is longer than 20 seconds. Please use a shorter video.');
     }
 
     const media = await bot.downloadMediaMessage(quoted);
     if (!media) return reply('❌ Failed to download media.');
 
-    // Get name of user as packname
     const userName = mek.pushName || 'Unknown';
-    const packname = `${userName}`;
+    const packname = userName;
     const author = `Ma volonté est un feu indomptable,\nmon nom, une légende qui s’écrit à chaque pas.`;
 
     const sticker = new Sticker(media, {
       pack: packname,
       author,
-      type: StickerTypes.FULL, // FULL supports animated if media is video
+      type: StickerTypes.FULL,
       quality: 100,
       fps: 10,
       loop: 0,
