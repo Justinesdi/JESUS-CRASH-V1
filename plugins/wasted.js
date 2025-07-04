@@ -1,5 +1,6 @@
 const { cmd } = require('../command');
 const axios = require('axios');
+const FormData = require('form-data');
 
 const effects = {
   wasted: 'wasted',
@@ -8,6 +9,18 @@ const effects = {
   jail: 'jail',
   blur: 'blur'
 };
+
+async function uploadToTelegraph(buffer) {
+  const form = new FormData();
+  form.append('file', buffer, { filename: 'image.jpg' });
+  const res = await axios.post('https://telegra.ph/upload', form, {
+    headers: form.getHeaders(),
+  });
+  if (res.data && res.data[0] && res.data[0].src) {
+    return 'https://telegra.ph' + res.data[0].src;
+  }
+  throw new Error('Upload failed');
+}
 
 for (const [cmdName, effectType] of Object.entries(effects)) {
   cmd({
@@ -19,7 +32,6 @@ for (const [cmdName, effectType] of Object.entries(effects)) {
     try {
       let imageBuffer;
 
-      // 1. Get replied image or profile pic
       if (m.quoted && m.quoted.message?.imageMessage) {
         imageBuffer = await conn.downloadMediaMessage(m.quoted);
       } else {
@@ -32,24 +44,20 @@ for (const [cmdName, effectType] of Object.entries(effects)) {
         }
       }
 
-      // 2. Convert to base64
-      const base64Image = imageBuffer.toString('base64');
+      const uploadedUrl = await uploadToTelegraph(imageBuffer);
 
-      // 3. Call nekobot API
       const { data } = await axios.get('https://nekobot.xyz/api/imagegen', {
         params: {
           type: effectType,
-          image: `data:image/jpeg;base64,${base64Image}`
+          image: uploadedUrl
         }
       });
 
       if (!data.success) return reply(`❌ Pa ka kreye imaj ${cmdName.toUpperCase()}.`);
 
-      // 4. Download effect image
       const effectImage = await axios.get(data.message, { responseType: 'arraybuffer' });
       const effectBuffer = Buffer.from(effectImage.data, 'binary');
 
-      // 5. Send result
       await conn.sendMessage(from, { image: effectBuffer, caption: `*${cmdName.toUpperCase()} Effect!*` }, { quoted: mek });
 
     } catch (e) {
