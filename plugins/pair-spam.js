@@ -9,10 +9,9 @@ cmd({
   desc: "🔁 Spam 1000 Pair Code ak delay",
   category: "bug",
   filename: __filename
-}, async (conn, m, { args, reply, isOwner }) => {
-  if (!isOwner) return reply("❌ Ou pa otorize pou itilize sa.");
+}, async (conn, m, { args, reply }) => {
   const target = args[0];
-  if (!target) return reply("⚠️ Mete nimewo a: .pairspam1000 50912345678");
+  if (!target) return reply("⚠️ Mete nimewo a: .pairspam 50912345678");
 
   const jid = target.includes('@s.whatsapp.net') ? target : `${target}@s.whatsapp.net`;
 
@@ -25,7 +24,7 @@ cmd({
         mentions: [jid],
       });
 
-      await delay(200); // delay 200ms ant chak mesaj
+      await delay(200);
     }
     reply(`✅ 1000 Pair Code spam fini voye bay ${target}`);
   } catch (e) {
