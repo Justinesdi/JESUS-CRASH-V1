@@ -13,11 +13,25 @@ cmd({
 }, async (conn, m, { text }) => {
   if (!text) return m.reply('❌ *Please provide a MEGA Session ID!*\nExample:\n.deploy JESUS~CRASH~V1~<file_id>#<file_key>');
 
-  // Regex pou verifye fomat sesyon MEGA
-  const match = text.trim().match(/^JESUS~CRASH~V1~([^#]+)#(.+)$/);
-  if (!match) return m.reply('❌ *Invalid session format.* Use:\n.deploy JESUS~CRASH~V1~<file_id>#<file_key>');
+  const input = text.trim();
+  const prefix = "JESUS~CRASH~V1~";
 
-  const [, fileId, fileKey] = match;
+  if (!input.startsWith(prefix)) {
+    return m.reply('❌ *Invalid session format.* Use:\n.deploy JESUS~CRASH~V1~<file_id>#<file_key>');
+  }
+
+  const sessionPart = input.slice(prefix.length);
+  const splitIndex = sessionPart.indexOf('#');
+  if (splitIndex === -1) {
+    return m.reply('❌ *Invalid session format.* Missing # separator.');
+  }
+
+  const fileId = sessionPart.slice(0, splitIndex);
+  const fileKey = sessionPart.slice(splitIndex + 1);
+
+  if (!fileId || !fileKey) {
+    return m.reply('❌ *Invalid session format.* File ID or File Key missing.');
+  }
 
   if (global.jadibotSessions[fileId]) return m.reply('⚠️ *Session already active.*');
   if (Object.keys(global.jadibotSessions).length >= 5) return m.reply('⚠️ *Limit reached (max 5 sessions).*');
