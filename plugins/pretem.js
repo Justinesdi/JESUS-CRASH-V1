@@ -3,7 +3,7 @@ const { Sticker, StickerTypes } = require('wa-sticker-formatter');
 
 cmd({
   pattern: 'pretem',
-  desc: 'Re-send any sticker, image, or short video as yours (max 20s video)',
+  desc: 'Re-send any sticker, image, or short video as yours (supports view-once)',
   category: 'spam',
   react: '🎭',
   filename: __filename
@@ -11,36 +11,43 @@ cmd({
   try {
     const quoted = mek.quoted;
 
-    if (!quoted || !['stickerMessage', 'videoMessage', 'imageMessage'].includes(quoted.mtype)) {
-      return reply('❌ Reply to a *sticker*, *image*, or *short video* (max 20s).');
+    if (!quoted) return reply('❌ Reponn ak yon *sticker*, *imaj*, oswa *videyo ≤ 20s*.');
+
+    // Dekode mesaj view-once si genyen
+    let qmsg = quoted.message;
+    if (qmsg?.viewOnceMessage?.message?.imageMessage) {
+      qmsg = qmsg.viewOnceMessage.message;
+      quoted.mtype = 'imageMessage'; // override type
     }
 
-    // For video, check duration
-    if (quoted.mtype === 'videoMessage' && quoted.message.videoMessage.seconds > 20) {
-      return reply('❌ Video is longer than 20 seconds. Please use a shorter one.');
+    // Si mtype pa sipòte
+    if (!['stickerMessage', 'videoMessage', 'imageMessage'].includes(quoted.mtype)) {
+      return reply('❌ Reponn ak yon *sticker*, *imaj*, oswa *videyo* ki pa depase 20 segonn.');
     }
 
-    const media = await bot.downloadMediaMessage(quoted);
-    if (!media) return reply('❌ Failed to download media.');
+    // Pou videyo: tcheke dire
+    if (quoted.mtype === 'videoMessage' && qmsg.videoMessage.seconds > 20) {
+      return reply('❌ Videyo a two long (> 20s).');
+    }
+
+    const media = await bot.downloadMediaMessage({ message: qmsg });
+    if (!media) return reply('❌ Echèk download medya.');
 
     const userName = mek.pushName || 'Unknown';
-    const packname = userName;
-    const author = `Ma volonté est un feu indomptable,\nmon nom, une légende qui s’écrit à chaque pas.`;
-
     const sticker = new Sticker(media, {
-      pack: packname,
-      author,
+      pack: userName,
+      author: 'Ma volonté est un feu indomptable,\nmon nom, une légende.',
       type: StickerTypes.FULL,
       quality: 100,
       fps: 10,
       loop: 0,
     });
 
-    const stickerBuffer = await sticker.toBuffer();
-    await bot.sendMessage(mek.chat, { sticker: stickerBuffer }, { quoted: mek });
+    const buffer = await sticker.toBuffer();
+    await bot.sendMessage(mek.chat, { sticker: buffer }, { quoted: mek });
 
   } catch (err) {
     console.error('[PRETEM ERROR]', err);
-    reply('❌ Erè pandan konvèsyon. Tanpri eseye ankò.');
+    reply('❌ Erè pandan konvèsyon. Asire w ke mesaj la disponib.');
   }
 });
