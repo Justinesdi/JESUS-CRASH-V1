@@ -112,7 +112,7 @@ cmd({
     const mediaOptions = [
       { type: 'video', url: 'https://files.catbox.moe/q9cbhm.mp4' },
       { type: 'video', url: 'https://files.catbox.moe/c7e8am.mp4' },
-      { type: 'video', url: 'https://files.catbox.moe/xbp15q.mp4' },
+      { type: 'video', url: 'https://files.catbox.moe/t0gsrv.mp4' },
       { type: 'video', url: 'https://files.catbox.moe/m296z6.mp4' },
       { type: 'image', url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/fuoqii.png' }
     ];
