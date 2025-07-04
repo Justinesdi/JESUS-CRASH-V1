@@ -6,7 +6,7 @@ const path = require('path');
 cmd({
   pattern: "toimage",
   alias: ["img", "photo"],
-  category: "convert",
+  category: "spam",
   desc: "Convert sticker to normal image",
   filename: __filename,
 }, async (conn, m, { reply }) => {
