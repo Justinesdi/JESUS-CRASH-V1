@@ -1,47 +1,75 @@
 const { cmd } = require('../command');
+const fs = require('fs');
 
-let antiBugOn = false; // Initial state
+// Chemen fichye pou sove eta antibug la
+const dbPath = './data/antibug.json';
 
-// Unicode cleaner
-const cleanText = (text) => {
-  return text
-    .replace(/[\u200B-\u200F\u061C\u180E\u2060-\u206F]/g, '') // Zero-width, RTL, bidi
-    .replace(/[^\x20-\x7E\n\r]/g, ''); // Only clean ASCII
-};
+// Chaje oswa inisyalize
+let antiBugOn = fs.existsSync(dbPath)
+  ? JSON.parse(fs.readFileSync(dbPath)).enabled
+  : false;
 
-// Command to toggle antibug
+// Sovgade eta
+function saveAntiBugState(on) {
+  fs.writeFileSync(dbPath, JSON.stringify({ enabled: on }, null, 2));
+  antiBugOn = on;
+}
+
+// Regex pou detekte Unicode sispèk
+const isBugUnicode = (text) => /[\u200B-\u200F\u061C\u180E\u2060-\u206F]/.test(text);
+
+// ✳️ Command pou aktive/dezaktive
 cmd({
   pattern: "antibug ?(.*)",
-  desc: "Toggle Anti-Bug Protection",
+  desc: "Aktive / Dezaktive AntiBug global",
   category: "protection",
   react: "🛡️",
-  filename: __filename
+  filename: __filename,
 }, async (conn, m, { arg, reply }) => {
-  const input = arg?.toLowerCase();
-
+  const input = (arg || "").toLowerCase();
   if (input === "on") {
-    antiBugOn = true;
-    return await reply("✅ *AntiBug Activated!*\nSuspicious Unicode will now be auto-deleted.");
+    saveAntiBugState(true);
+    return await reply("✅ *AntiBug Active!*\nUnicode sispèk ap efase + sanksyon.");
   } else if (input === "off") {
-    antiBugOn = false;
-    return await reply("🚫 *AntiBug Deactivated.*\nUnicode protection is now disabled.");
+    saveAntiBugState(false);
+    return await reply("🚫 *AntiBug Dezaktive.*");
   } else {
     return await reply(`🛡️ *AntiBug Status:* ${antiBugOn ? "ON ✅" : "OFF ❌"}\n\nUse *.antibug on* or *.antibug off*`);
   }
 });
 
-// Middleware pou bloke Unicode si antibug active
+// 📥 Global listener — aktif si antibug la sou
 cmd({
   pattern: ".*",
-  dontAddCommandList: true,
   fromMe: false,
-  filename: __filename
+  dontAddCommandList: true,
+  filename: __filename,
 }, async (conn, m, { next }) => {
-  if (antiBugOn && /[\u200B-\u200F\u061C\u180E\u2060-\u206F]/.test(m.body)) {
-    return await conn.sendMessage(m.chat, {
-      text: "⚠️ Unicode Bug Detected and Blocked!",
-      quoted: m
-    });
+  if (!m || !m.body || !antiBugOn) return await next();
+
+  if (isBugUnicode(m.body)) {
+    try {
+      await conn.sendMessage(m.chat, { delete: m.key });
+    } catch {}
+
+    if (m.isGroup) {
+      try {
+        await conn.groupParticipantsUpdate(m.chat, [m.sender], "remove");
+      } catch (e) {
+        await conn.sendMessage(m.chat, {
+          text: `🚫 *Unicode Bug Blocked!*\nUser couldn't be kicked (maybe admin).`,
+          quoted: m
+        });
+      }
+    } else {
+      try {
+        await conn.updateBlockStatus(m.sender, "block");
+        await conn.sendMessage(m.chat, {
+          text: "🚫 *Unicode Bug Blocked!*\nYou’ve been blocked for suspicious characters.",
+        });
+      } catch {}
+    }
+    return;
   }
 
   return await next();
