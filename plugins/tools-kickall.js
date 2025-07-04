@@ -1,125 +1,119 @@
 const { cmd } = require('../command');
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// 🛠 Get only plain ID
-const getPlainId = (jid) => jid.replace(/@.+/, '');
-
-// ✅ Remove all non-admin members
+// remove only member
 cmd({
-  pattern: "kickalls",
-  alias: ["kickall", "endgc", "endgroup"],
-  desc: "Remove all non-admin members from the group.",
-  react: "🧹",
-  category: "group",
-  filename: __filename,
-}, async (conn, mek, m, {
-  from, isGroup, isAdmins, isBotAdmins, groupMetadata, reply, isOwner
+    pattern: "removemembers",
+    alias: ["kickall", "endgc", "endgroup"],
+    desc: "*ʀᴇᴍᴏᴠᴇ ᴀʟʟ ɴᴏɴ-ᴀᴅᴍɪɴ ᴍᴇᴍʙᴇʀs ғʀᴏᴍ ᴛʜᴇ ɢʀᴏᴜᴘ*",
+    react: "🗑️",
+    category: "group",
+    filename: __filename,
+}, 
+async (conn, mek, m, {
+    from, groupMetadata, groupAdmins, isBotAdmins, senderNumber, reply, isGroup
 }) => {
-  try {
-    if (!isGroup) return reply("❗ This command only works in groups.");
-    if (!isAdmins && !isOwner) return reply("❌ You must be an *admin*.");
-    if (!isBotAdmins) return reply("❌ Bot needs to be *admin* to perform this.");
+    try {
+        if (!isGroup) return reply("*ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴄᴀɴ ᴏɴʟʏ ʙᴇ ᴜsᴇᴅ ɪɴ ɢʀᴏᴜᴘs*");
+        const botOwner = conn.user.id.split(":")[0];
+        if (senderNumber !== botOwner) return reply("*ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ*");
+        if (!isBotAdmins) return reply("*ɪ ɴᴇᴇᴅ ᴀᴅᴍɪɴ ʀɪɢʜᴛs to ᴘᴇʀғᴏʀᴍ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ*");
 
-    const admins = groupMetadata.participants.filter(p => p.admin).map(p => p.id);
-    const targets = groupMetadata.participants.filter(p => !admins.includes(p.id));
+        const allParticipants = groupMetadata.participants;
+        const nonAdmins = allParticipants.filter(p => !groupAdmins.includes(p.id));
 
-    if (!targets.length) return reply("✅ No non-admin members to remove.");
+        for (let p of nonAdmins) {
+            try {
+                await conn.groupParticipantsUpdate(from, [p.id], "remove");
+                await sleep(2000);
+            } catch (e) {
+                console.error(`*ᴇʀʀᴏʀ ʀᴇᴍᴏᴠɪɴɢ ${p.id}:*`, e);
+            }
+        }
 
-    reply(`🗑 Removing ${targets.length} non-admin members...`);
-
-    for (let member of targets) {
-      await conn.groupParticipantsUpdate(from, [member.id], "remove").catch(e => {
-        console.error(`❌ Can't remove ${member.id}:`, e.message);
-      });
-      await sleep(2000);
+        reply("*☑️ ᴀʟʟ ɴᴏɴ-ᴀᴅᴍɪɴ ᴍᴇᴍʙᴇʀs ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ sɪʟᴇɴᴛʟʏ*");
+    } catch (e) {
+        console.error("Error:", e);
+        reply("*⚠️ ᴀɴ ᴇʀʀᴏʀ ᴏᴄᴄᴜʀʀᴇᴅ ᴡʜɪʟᴇ ʀᴇᴍᴏᴠɪɴɢ ɴᴏɴ-ᴀᴅᴍɪɴs*");
     }
-
-    reply("✅ Finished removing non-admins.");
-  } catch (e) {
-    console.error(e);
-    reply("❌ An error occurred while executing the command.");
-  }
 });
 
-// ✅ Remove all admins (excluding bot & owner)
+// remove only admins
 cmd({
-  pattern: "removeadmins",
-  alias: ["kickadmins", "kickall3", "deladmins"],
-  desc: "Remove all admins except bot & owner.",
-  react: "🚫",
-  category: "group",
-  filename: __filename,
-}, async (conn, mek, m, {
-  from, isGroup, isAdmins, isOwner, isBotAdmins, groupMetadata, reply
+    pattern: "removeadmins",
+    alias: ["kickadmins", "kickall3", "deladmins"],
+    desc: "*ʀᴇᴍᴏᴠᴇ ᴀʟʟ ᴀᴅᴍɪɴ ᴍᴇᴍʙᴇʀs ғʀᴏᴍ ᴛʜᴇ ɢʀᴏᴜᴘ, ᴇxᴄʟᴜᴅɪɴɢ ᴛʜᴇ ʙᴏᴛ ᴀɴᴅ ʙᴏᴛ ᴏᴡɴᴇʀ*",
+    react: "🚮",
+    category: "group",
+    filename: __filename,
+}, 
+async (conn, mek, m, {
+    from, isGroup, senderNumber, groupMetadata, groupAdmins, isBotAdmins, reply
 }) => {
-  try {
-    if (!isGroup) return reply("❗ Group only command.");
-    if (!isAdmins && !isOwner) return reply("❌ You must be an *admin*.");
-    if (!isBotAdmins) return reply("❌ Bot needs admin privileges.");
+    try {
+        if (!isGroup) return reply("*ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴄᴀɴ ᴏɴʟʏ ʙᴇ ᴜsᴇᴅ ɪɴ ɢʀᴏᴜᴘs*");
+        const botOwner = conn.user.id.split(":")[0];
+        if (senderNumber !== botOwner) return reply("*ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ*");
+        if (!isBotAdmins) return reply("*ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴇxᴇᴄᴜᴛᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ*");
 
-    const botJid = conn.user.id;
-    const ownerId = getPlainId(botJid);
-    const targets = groupMetadata.participants.filter(p =>
-      p.admin &&
-      p.id !== botJid &&
-      getPlainId(p.id) !== ownerId
-    );
+        const allParticipants = groupMetadata.participants;
+        const adminParticipants = allParticipants.filter(member => 
+            groupAdmins.includes(member.id) && 
+            member.id !== conn.user.id && 
+            member.id !== `${botOwner}@s.whatsapp.net`
+        );
 
-    if (!targets.length) return reply("✅ No admins to remove (except bot/owner).");
+        for (let p of adminParticipants) {
+            try {
+                await conn.groupParticipantsUpdate(from, [p.id], "remove");
+                await sleep(2000);
+            } catch (e) {
+                console.error(`*ғᴀɪʟᴇᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ${p.id}:*`, e);
+            }
+        }
 
-    reply(`🗑 Removing ${targets.length} admins...`);
-
-    for (let member of targets) {
-      await conn.groupParticipantsUpdate(from, [member.id], "remove").catch(e => {
-        console.error(`❌ Failed to remove ${member.id}:`, e.message);
-      });
-      await sleep(2000);
+        reply("*☑️ ᴀʟʟ ᴀᴅᴍɪɴ ᴍᴇᴍʙᴇʀs (ᴇxᴄᴇᴘᴛ ʙᴏᴛ ᴀɴᴅ ᴏᴡɴᴇʀ) ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ sɪʟᴇɴᴛʟʏ*");
+    } catch (e) {
+        console.error("Error:", e);
+        reply("*⚠️ ᴇʀʀᴏʀ ᴡʜɪʟᴇ ʀᴇᴍᴏᴠɪɴɢ ᴀᴅᴍɪɴs*");
     }
-
-    reply("✅ Admins removed (except bot/owner).");
-  } catch (e) {
-    console.error(e);
-    reply("❌ Failed to remove admins.");
-  }
 });
 
-// ✅ Remove everyone except bot & owner
+// remove admins and members both
 cmd({
-  pattern: "kickalls2",
-  alias: ["kickall2", "endgc2", "endgroup2"],
-  desc: "Remove all members except bot & owner.",
-  react: "🧨",
-  category: "group",
-  filename: __filename,
-}, async (conn, mek, m, {
-  from, isGroup, isAdmins, isOwner, isBotAdmins, groupMetadata, reply
+    pattern: "removeall2",
+    alias: ["kickall2", "endgc2", "endgroup2"],
+    desc: "Remove all members and admins from the group, excluding the bot and bot owner.",
+    react: "📢",
+    category: "group",
+    filename: __filename,
+}, 
+async (conn, mek, m, {
+    from, isGroup, senderNumber, groupMetadata, isBotAdmins, reply
 }) => {
-  try {
-    if (!isGroup) return reply("❗ Group only.");
-    if (!isAdmins && !isOwner) return reply("❌ Admins only.");
-    if (!isBotAdmins) return reply("❌ Bot must be admin.");
+    try {
+        if (!isGroup) return reply("*ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ᴄᴀɴ ᴏɴʟʏ ʙᴇ ᴜsᴇᴅ ɪɴ ɢʀᴏᴜᴘs*");
+        const botOwner = conn.user.id.split(":")[0];
+        if (senderNumber !== botOwner) return reply("*ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ*");
+        if (!isBotAdmins) return reply("*ɪ ɴᴇᴇᴅ ᴛᴏ ʙᴇ ᴀɴ ᴀᴅᴍɪɴ ᴛᴏ ᴇxᴇᴄᴜᴛᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ*");
 
-    const botJid = conn.user.id;
-    const ownerId = getPlainId(botJid);
+        const allParticipants = groupMetadata.participants;
+        const participantsToRemove = allParticipants.filter(
+            p => p.id !== conn.user.id && p.id !== `${botOwner}@s.whatsapp.net`
+        );
 
-    const targets = groupMetadata.participants.filter(p =>
-      p.id !== botJid && getPlainId(p.id) !== ownerId
-    );
+        for (let p of participantsToRemove) {
+            try {
+                await conn.groupParticipantsUpdate(from, [p.id], "remove");
+                await sleep(2000);
+            } catch (e) {
+                console.error(`*ғᴀɪʟᴇᴅ ᴛᴏ ʀᴇᴍᴏᴠᴇ ${p.id}:*`, e);
+            }
+        }
 
-    if (!targets.length) return reply("✅ No members to remove (except bot/owner).");
-
-    reply(`🗑 Removing ${targets.length} members...`);
-
-    for (let member of targets) {
-      await conn.groupParticipantsUpdate(from, [member.id], "remove").catch(e => {
-        console.error(`❌ Failed to remove ${member.id}:`, e.message);
-      });
-      await sleep(2000);
+        reply("*☑️ All ᴍᴇᴍʙᴇʀs (ᴇxᴄᴇᴘᴛ ʙᴏᴛ ᴀɴᴅ ᴏᴡɴᴇʀ) ʜᴀᴠᴇ ʙᴇᴇɴ ʀᴇᴍᴏᴠᴇᴅ sɪʟᴇɴᴛʟʏ*");
+    } catch (e) {
+        console.error("Error:", e);
+        reply("*⚠️ ᴇʀʀᴏʀ ᴡʜɪʟᴇ ʀᴇᴍᴏᴠɪɴɢ ᴍᴇᴍʙᴇʀs*");
     }
-
-    reply("✅ All members removed (except bot/owner).");
-  } catch (e) {
-    console.error(e);
-    reply("❌ Something went wrong during removal.");
-  }
 });
