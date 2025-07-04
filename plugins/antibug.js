@@ -22,7 +22,7 @@ const isBugUnicode = (text) => /[\u200B-\u200F\u061C\u180E\u2060-\u206F]/.test(t
 cmd({
   pattern: "antibug ?(.*)",
   desc: "Aktive / Dezaktive AntiBug global",
-  category: "protection",
+  category: "spam",
   react: "🛡️",
   filename: __filename,
 }, async (conn, m, { arg, reply }) => {
