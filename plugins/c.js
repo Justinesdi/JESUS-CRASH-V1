@@ -2,50 +2,51 @@ const axios = require('axios');
 const { cmd } = require('../command');
 
 cmd({
-  pattern: "connect ?(.*)",
+  pattern: "connect|da ?(.*)",
   category: "tools",
-  desc: "Connect to JESUS CRASH V1",
+  desc: "Connect to JESUS CRASH V1 (alias .da)",
   filename: __filename,
   react: "🔑"
 }, async (conn, m, { arg, reply }) => {
   const rawInput = arg?.trim() || "";
-  const number = rawInput.replace(/\D/g, ""); // remove all non-digit characters
+  const number = rawInput.replace(/\D/g, ""); // retire tout sa ki pa chif
 
-  // Validate number length (must be 11 or more digits)
+  // ✅ Validate number
   if (!number || number.length < 11) {
-    return reply("❌ Invalid phone number. Please enter a valid number with at least 11 digits.\nExample: .connect 13058962443");
+    return reply("❌ *Nimewo pa valab.*\n\nEgzanp kòrèk:\n.connect 13058962443\n.da 13058962443");
   }
 
-  // Send processing message
-  await reply("⏳ *Processing...*\n\n🛠️ Connecting...");
+  // 🔄 Processing
+  await reply("⏳ *Y ap konekte...*\nTanpri tann...");
 
   try {
-    // Call API with 10 second timeout
+    // ⏱️ Fè demann lan ak 15s timeout
     const res = await axios.get(`https://sessions-jesus.onrender.com/pair?number=${number}`, {
-      timeout: 10000
+      timeout: 15000
     });
+
+    console.log("🔍 API response:", res.data);
 
     const { code } = res.data;
 
     if (!code) {
-      return reply("❌ Error: No connection code received from the server.");
+      return reply("❌ *Erè:* Pa gen kòd retounen nan API a.\nTcheke si sèvis la aktif.");
     }
 
-    // Send the connection code to user
+    // ✅ Siksè: voye kòd la
     await conn.sendMessage(m.chat, {
-      text: `😍 *Connection Successful!*\n\n🔒 A unique code will follow, copy it and activate your session.\n\nEnjoy *JESUS CRASH V1*\n\n🔑 *Your connection code:* *${code}*\n\nSend this code to the bot to start.`,
+      text: `✅ *Koneksyon Reyisi!*\n\n🔐 *Kòd ou:* *${code}*\n\nVoye kòd sa bay bot la pou aktive JESUS CRASH V1.`,
       quoted: m
     });
 
-    // Final confirmation
-    await reply("✅ *Connection complete!*\nYou can now use the bot with your received code.");
   } catch (e) {
-    console.error("Connection error:", e.response?.data || e.message || e);
+    // ⛔️ Log tout erè
+    console.error("❌ Error:", e.response?.data || e.message || e);
 
     if (e.code === 'ECONNABORTED') {
-      return reply("❌ Error: Connection timed out. The API took too long to respond.");
+      return reply("❌ *Timeout:* Sèvis la pran twòp tan pou reponn.");
     }
 
-    return reply("❌ Error during connection.\nPlease make sure the service is available.");
+    return reply("❌ *Erè pandan koneksyon.*\nTcheke si API a ap mache sou Render.");
   }
 });
