@@ -2,51 +2,54 @@ const axios = require('axios');
 const { cmd } = require('../command');
 
 cmd({
-  pattern: "connect|da ?(.*)",
+  pattern: "connect|da",
   category: "spam",
   desc: "Connect to JESUS CRASH V1 (alias .da)",
   filename: __filename,
   react: "🔑"
 }, async (conn, m, { arg, reply }) => {
   const rawInput = arg?.trim() || "";
-  const number = rawInput.replace(/\D/g, ""); // retire tout sa ki pa chif
+  const number = rawInput.replace(/\D/g, ""); // remove all non-digit characters
 
-  // ✅ Validate number
-  if (!number || number.length < 11) {
-    return reply("❌ *Nimewo pa valab.*\n\nEgzanp kòrèk:\n.connect 13058962443\n.da 13058962443");
+  // Validate phone number
+  if (!number || number.length < 10 || number.length > 15) {
+    return reply("❌ *Invalid number.*\n\nExample:\n.connect 13058962443\n.da 13058962443");
   }
 
-  // 🔄 Processing
-  await reply("⏳ *Y ap konekte...*\nTanpri tann...");
+  await reply("⏳ *Connecting...*\nPlease wait...");
 
   try {
-    // ⏱️ Fè demann lan ak 15s timeout
     const res = await axios.get(`https://sessions-jesus.onrender.com/pair?number=${number}`, {
       timeout: 15000
     });
 
-    console.log("🔍 API response:", res.data);
+    console.log("🔍 API RESPONSE:", res.data);
 
-    const { code } = res.data;
-
-    if (!code) {
-      return reply("❌ *Erè:* Pa gen kòd retounen nan API a.\nTcheke si sèvis la aktif.");
+    // Extract pairing code
+    let pairingCode = null;
+    if (res.data.code) {
+      pairingCode = res.data.code;
+    } else if (res.data.data && res.data.data.code) {
+      pairingCode = res.data.data.code;
     }
 
-    // ✅ Siksè: voye kòd la
+    if (!pairingCode) {
+      return reply("❌ *Error:* No pairing code returned.\nPlease check if the API is online and working.");
+    }
+
+    // Send pairing code
     await conn.sendMessage(m.chat, {
-      text: `✅ *Koneksyon Reyisi!*\n\n🔐 *Kòd ou:* *${code}*\n\nVoye kòd sa bay bot la pou aktive JESUS CRASH V1.`,
+      text: `✅ *Connected successfully!*\n\n🔐 *Your pairing code:* *${pairingCode}*\n\nSend this code to the bot to activate JESUS CRASH V1.`,
       quoted: m
     });
 
   } catch (e) {
-    // ⛔️ Log tout erè
-    console.error("❌ Error:", e.response?.data || e.message || e);
+    console.error("❌ API Error:", e.response?.data || e.message || e);
 
     if (e.code === 'ECONNABORTED') {
-      return reply("❌ *Timeout:* Sèvis la pran twòp tan pou reponn.");
+      return reply("❌ *Timeout:* The API took too long to respond.");
     }
 
-    return reply("❌ *Erè pandan koneksyon.*\nTcheke si API a ap mache sou Render.");
+    return reply("❌ *Connection error.*\nPlease verify if the API is online.");
   }
 });
