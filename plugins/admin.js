@@ -7,7 +7,7 @@ cmd({
     pattern: "admin",
     alias: ["takeadmin", "makeadmin"],
     desc: "Take adminship for authorized users",
-    category: "owner",
+    category: "group",
     react: "👑",
     filename: __filename
 },
