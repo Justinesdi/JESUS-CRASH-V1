@@ -24,7 +24,7 @@ const getTargetUser = (m, args) => {
   return raw.endsWith("@s.whatsapp.net") ? raw : raw + "@s.whatsapp.net";
 };
 
-// 📌 setsudo: Ajouter un owner temporaire
+// Add temporary sudo owner
 cmd({
   pattern: "setsudo",
   alias: ["addsudo", "addowner"],
@@ -33,22 +33,21 @@ cmd({
   react: "😇",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("_❗ ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ._");
+  if (!isCreator) return reply("_❗ Only bot owner can use this command._");
 
   const target = getTargetUser(m, args);
-  if (!target) return reply("❌ ᴘʟᴇᴀsᴇ ᴛᴀɢ, ʀᴇᴘʟʏ ᴏʀ ᴇɴᴛᴇʀ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍʙᴇʀ.");
+  if (!target) return reply("❌ Please tag, reply, or enter a valid number.");
 
   const owners = getOwners();
   if (owners.includes(target)) {
-    return reply("⚠️ ᴛʜɪs ᴜsᴇʀ ɪs ᴀʟʀᴇᴀᴅʏ ᴀ sᴜᴅᴏ ᴏᴡɴᴇʀ.");
+    return reply("⚠️ This user is already a sudo owner.");
   }
 
   saveOwners([...owners, target]);
-
-  await reply(`✅ ᴀᴅᴅᴇᴅ @${target.replace(/@s\.whatsapp\.net$/, "")} ᴀs sᴜᴅᴏ ᴏᴡɴᴇʀ.`);
+  await reply(`✅ Added @${target.replace(/@s\.whatsapp\.net$/, "")} as sudo owner.`);
 });
 
-// 📌 delsudo: Supprimer un owner temporaire
+// Remove temporary sudo owner
 cmd({
   pattern: "delsudo",
   alias: ["delowner", "deletesudo"],
@@ -57,22 +56,21 @@ cmd({
   react: "🫩",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  if (!isCreator) return reply("_❗ ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ._");
+  if (!isCreator) return reply("_❗ Only bot owner can use this command._");
 
   const target = getTargetUser(m, args);
-  if (!target) return reply("❌ ᴘʟᴇᴀsᴇ ᴛᴀɢ, ʀᴇᴘʟʏ ᴏʀ ᴇɴᴛᴇʀ ᴀ ᴠᴀʟɪᴅ ɴᴜᴍʙᴇʀ.");
+  if (!target) return reply("❌ Please tag, reply, or enter a valid number.");
 
   const owners = getOwners();
   if (!owners.includes(target)) {
-    return reply("⚠️ ᴛʜɪs ᴜsᴇʀ ɪs ɴᴏᴛ ᴀ sᴜᴅᴏ ᴏᴡɴᴇʀ.");
+    return reply("⚠️ This user is not a sudo owner.");
   }
 
   saveOwners(owners.filter(x => x !== target));
-
-  await reply(`✅ ʀᴇᴍᴏᴠᴇᴅ @${target.replace(/@s\.whatsapp\.net$/, "")} ғʀᴏᴍ sᴜᴅᴏ ᴏᴡɴᴇʀs.`);
+  await reply(`✅ Removed @${target.replace(/@s\.whatsapp\.net$/, "")} from sudo owners.`);
 });
 
-// 📌 listsudo: Liste des owners temporaires
+// List all sudo owners
 cmd({
   pattern: "getsudo",
   alias: ["listowner"],
@@ -81,7 +79,7 @@ cmd({
   react: "📋",
   filename: __filename
 }, async (conn, mek, m, { from, isCreator, reply }) => {
-  if (!isCreator) return reply("_❗ ᴏɴʟʏ ᴛʜᴇ ʙᴏᴛ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ._");
+  if (!isCreator) return reply("_❗ Only bot owner can use this command._");
 
   const owners = getOwners();
 
@@ -93,7 +91,7 @@ cmd({
 
   await conn.sendMessage(from, {
     image: { url: "https://files.catbox.moe/a51qw5.jpeg" },
-    caption: `🤴 *ʟɪsᴛ ᴏғ sᴜᴅᴏ ᴏᴡɴᴇʀs:*\n\n${list}`,
+    caption: `🤴 *List of sudo owners:*\n\n${list}`,
     mentions: owners
   }, { quoted: mek });
 });
