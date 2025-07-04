@@ -25,10 +25,13 @@ cmd({
       deviceType = '💻 WhatsApp Web/Desktop';
     }
 
+    const mentionedJid = quotedMsg.participant || quotedMsg.key.participant || quotedMsg.key.remoteJid;
+
     await client.sendMessage(message.chat, {
       text: `✅ *That user is using:* ${deviceType}`,
-      mentions: [quotedMsg.participant || quotedMsg.key.participant || quotedMsg.key.remoteJid],
-    }, { quoted: message });
+      mentions: [mentionedJid],
+      quoted: message
+    });
 
   } catch (err) {
     console.error(err);
