@@ -3,7 +3,7 @@ const { cmd } = require('../command');
 
 cmd({
   pattern: "connect|da ?(.*)",
-  category: "tools",
+  category: "spam",
   desc: "Connect to JESUS CRASH V1 (alias .da)",
   filename: __filename,
   react: "🔑"
