@@ -3,7 +3,7 @@ const { Sticker, StickerTypes } = require('wa-sticker-formatter');
 
 cmd({
   pattern: 'pretem',
-  desc: 'Re-send any sticker or video as yours (max 20s video)',
+  desc: 'Re-send any sticker, image, or short video as yours (max 20s video)',
   category: 'spam',
   react: '🎭',
   filename: __filename
@@ -11,13 +11,13 @@ cmd({
   try {
     const quoted = mek.quoted;
 
-    if (!quoted || !['stickerMessage', 'videoMessage'].includes(quoted.mtype)) {
-      return reply('❌ Reply to a *sticker* or a *short video* (max 20s) to pretend it\'s yours.');
+    if (!quoted || !['stickerMessage', 'videoMessage', 'imageMessage'].includes(quoted.mtype)) {
+      return reply('❌ Reply to a *sticker*, *image*, or *short video* (max 20s).');
     }
 
     // For video, check duration
     if (quoted.mtype === 'videoMessage' && quoted.message.videoMessage.seconds > 20) {
-      return reply('❌ Video is longer than 20 seconds. Please use a shorter video.');
+      return reply('❌ Video is longer than 20 seconds. Please use a shorter one.');
     }
 
     const media = await bot.downloadMediaMessage(quoted);
@@ -41,6 +41,6 @@ cmd({
 
   } catch (err) {
     console.error('[PRETEM ERROR]', err);
-    reply('❌ An error occurred while processing the sticker or video.');
+    reply('❌ Erè pandan konvèsyon. Tanpri eseye ankò.');
   }
 });
