@@ -53,7 +53,7 @@ cmd({
 
         const dec = "*✅ sᴜᴄᴄᴇssғᴜʟʟʏ ᴀᴅᴅᴇᴅ ᴜsᴇʀ ᴀs ᴛᴇᴍᴘᴏʀᴀʀʏ ᴏᴡɴᴇʀ*";
         await conn.sendMessage(from, {  // استفاده از await در اینجا درست است
-            image: { url: "https://files.catbox.moe/1rioah.jpg" },
+            image: { url: "https://files.catbox.moe/a7wgu7.png" },
             caption: dec
         }, { quoted: mek });
     } catch (err) {
@@ -92,7 +92,7 @@ cmd({
 
         const dec = "*✅ sᴜᴄᴄᴇssғᴜʟʟʏ ʀᴇᴍᴏᴠᴇᴅ ᴜsᴇʀ ᴀs ᴛᴇᴍᴘᴏʀᴀʀʏ ᴏᴡɴᴇʀ*";
         await conn.sendMessage(from, {  // استفاده از await در اینجا درست است
-            image: { url: "https://files.catbox.moe/p3hqkn.jpg" },
+            image: { url: "https://files.catbox.moe/a7wgu7.png" },
             caption: dec
         }, { quoted: mek });
     } catch (err) {
