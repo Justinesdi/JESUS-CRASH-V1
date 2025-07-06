@@ -6,22 +6,32 @@ const path = require('path');
 cmd({
   pattern: "toimage",
   alias: ["img", "photo"],
-  category: "spam",
-  desc: "Convert sticker to normal image",
+  category: "tools",
+  desc: "Convertir un sticker en image",
   filename: __filename,
 }, async (conn, m, { reply }) => {
   const quoted = m.quoted;
 
-  if (!quoted || !quoted.message || !quoted.message.stickerMessage) {
-    return await reply("❌ Please reply to a sticker to convert it into an image.");
+  // ✔️ Deteksyon fleksib pou sticker
+  if (
+    !quoted ||
+    !quoted.message ||
+    (!quoted.message.stickerMessage && !quoted.mtype?.includes("sticker"))
+  ) {
+    return await reply("❌ *Veuillez répondre à un sticker pour le convertir en image.*");
   }
 
   try {
-    // Kreye folder tanporè si li pa egziste
+    // 📁 Kreye folder tanporè si li pa egziste
     const tempDir = path.resolve(__dirname, "../sessions/temp");
     if (!existsSync(tempDir)) mkdirSync(tempDir, { recursive: true });
 
     const buffer = await conn.downloadMediaMessage(quoted);
+
+    if (!buffer) {
+      return await reply("⚠️ Impossible de télécharger le sticker.");
+    }
+
     const { ext } = (await fromBuffer(buffer)) || { ext: 'webp' };
     const filename = path.join(tempDir, `toimage-${Date.now()}.${ext}`);
 
@@ -29,18 +39,18 @@ cmd({
 
     await conn.sendMessage(m.chat, {
       image: { url: filename },
-      caption: "✅ Successfully converted sticker to image!",
+      caption: "✅ *Sticker converti en image avec succès !*",
     }, { quoted: m });
 
-    // Efase fichye apre 5 segonn
+    // 🧹 Efase fichye apre 5 segonn
     setTimeout(() => {
       try {
-        unlinkSync(filename);
-      } catch {}
+        if (existsSync(filename)) unlinkSync(filename);
+      } catch (e) {}
     }, 5000);
 
   } catch (err) {
-    console.error(err);
-    await reply("❌ Error occurred during conversion.");
+    console.error("❌ Erè nan konvèsyon sticker:", err);
+    await reply("❌ Une erreur est survenue lors de la conversion.");
   }
 });
