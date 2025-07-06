@@ -21,6 +21,86 @@ cmd({
 });
 
 cmd({
+    pattern: "mende4",
+    alias: ["tati-janet", "tati-kiki"],
+    desc: "Send the mendel meme audio",
+    category: "spam",
+    react: "💫",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+    try {
+        await conn.sendMessage(from, {
+            audio: { url: "https://files.catbox.moe/kwq4o1.mp4" },
+            mimetype: "audio/mpeg",
+            ptt: false
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(e);
+        reply("*❌ mendel Failed!*\n_Blyat! Error: " + e.message + "_");
+    }
+});
+
+cmd({
+    pattern: "mende5",
+    alias: ["tati-janet", "tati-kiki"],
+    desc: "Send the mendel meme audio",
+    category: "spam",
+    react: "💫",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+    try {
+        await conn.sendMessage(from, {
+            audio: { url: "https://files.catbox.moe/9jo2fw.mp4" },
+            mimetype: "audio/mpeg",
+            ptt: false
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(e);
+        reply("*❌ mendel Failed!*\n_Blyat! Error: " + e.message + "_");
+    }
+});
+
+cmd({
+    pattern: "mende6",
+    alias: ["tati-janet", "tati-kiki"],
+    desc: "Send the mendel meme audio",
+    category: "spam",
+    react: "💫",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+    try {
+        await conn.sendMessage(from, {
+            audio: { url: "https://files.catbox.moe/015q3u.mp4" },
+            mimetype: "audio/mpeg",
+            ptt: false
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(e);
+        reply("*❌ mendel Failed!*\n_Blyat! Error: " + e.message + "_");
+    }
+});
+
+cmd({
+    pattern: "mende7",
+    alias: ["tati-janet", "tati-kiki"],
+    desc: "Send the mendel meme audio",
+    category: "spam",
+    react: "💫",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+    try {
+        await conn.sendMessage(from, {
+            audio: { url: "https://files.catbox.moe/4zad0x.mp4" },
+            mimetype: "audio/mpeg",
+            ptt: false
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(e);
+        reply("*❌ mendel Failed!*\n_Blyat! Error: " + e.message + "_");
+    }
+});
+
+cmd({
     pattern: "mendel2",
     alias: ["tati-janet2", "tati-kiki2"],
     desc: "Send the mendel meme audio",
