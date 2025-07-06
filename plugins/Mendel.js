@@ -21,7 +21,7 @@ cmd({
 });
 
 cmd({
-    pattern: "mende4",
+    pattern: "mendel4",
     alias: ["tati-janet", "tati-kiki"],
     desc: "Send the mendel meme audio",
     category: "spam",
@@ -41,7 +41,7 @@ cmd({
 });
 
 cmd({
-    pattern: "mende5",
+    pattern: "mendel5",
     alias: ["tati-janet", "tati-kiki"],
     desc: "Send the mendel meme audio",
     category: "spam",
@@ -61,7 +61,7 @@ cmd({
 });
 
 cmd({
-    pattern: "mende6",
+    pattern: "mendel6",
     alias: ["tati-janet", "tati-kiki"],
     desc: "Send the mendel meme audio",
     category: "spam",
@@ -81,7 +81,7 @@ cmd({
 });
 
 cmd({
-    pattern: "mende7",
+    pattern: "mendel7",
     alias: ["tati-janet", "tati-kiki"],
     desc: "Send the mendel meme audio",
     category: "spam",
